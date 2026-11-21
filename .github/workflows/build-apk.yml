@@ -1,0 +1,50 @@
+name: Build HealthSync APK
+
+# This workflow builds the HealthSync Android app on GitHub's servers,
+# so you do NOT need to install JDK or the Android SDK on your own PC.
+# How to use it:
+#   1. Fork https://github.com/espaillato/HealthSync on GitHub.
+#   2. In your fork, create this file at .github/workflows/build-apk.yml
+#      (paste the whole content of this file).
+#   3. Open the Actions tab of your fork, select "Build HealthSync APK",
+#      click "Run workflow".
+#   4. When it finishes, download the "HealthSync-debug-apk" artifact
+#      (a ZIP containing app-debug.apk), copy the APK to your phone and
+#      install it. Android will warn about an unrecognized app — expected
+#      for a sideloaded APK; dismiss it.
+# Notes:
+#   - This builds the DEBUG variant: no signing key needed, works
+#     immediately. For long-term daily use the README recommends the
+#     release build; switching later needs a reinstall (your data lives
+#     in Google Drive, so nothing is lost).
+#   - Public repos (and public forks) get GitHub Actions free, so the
+#     build costs nothing.
+#   - The APK is kept as an Actions artifact (90 days by default).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthSync-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
